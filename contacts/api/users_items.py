@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Security
 from dependencies.database import get_db, SessionLocal
+from depenedencies.rate_limiter import rate_limit
 from dependencies.auth import create_access_token, create_refresh_token, decode_refresh_token
-from schemas.users_schema import User, TokenModel
+from schemas.users_schema import User, TokenModel, UserActivation
 from services.user_service import UserService
 from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
 
@@ -10,12 +11,18 @@ security = HTTPBearer()
 
 
 @router.post("/register/", status_code=status.HTTP_201_CREATED)
-async def register(user: User, db: SessionLocal = Depends(get_db)):
+async def register(user: User, db: SessionLocal = Depends(get_db), rl=Depends(rate_limit)):
     user_service = UserService(db)
     exist_user = user_service.get_by_email(user.email)
     if exist_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
     return user_service.create_new(user)
+
+
+@router.post("/activate/", response_model=User)
+async def activate(data: UserActivation, db: SessionLocal = Depends(get_db), rl=Depends(rate_limit)):
+    user_service = UserService(db)
+    return user_service.activate_user(data)
 
 
 @router.post('/login/')
@@ -24,6 +31,8 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: SessionLocal = 
     user = user_service.get_by_email(body.username)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email")
+    if not user.confirmed:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email not confirmed")
     if not user_service.verify_password(user.email, body.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
     access_token = await create_access_token(user.email)

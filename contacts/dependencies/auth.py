@@ -4,11 +4,15 @@ from dependencies.database import get_db, SessionLocal
 from services.user_service import UserService
 import datetime
 from jose import JWTError, jwt
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-secret_key = "secret_key"
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
 
 
 async def create_access_token(email: str):
@@ -18,7 +22,7 @@ async def create_access_token(email: str):
         "scope": "access_token"
     }
     to_encode = token_data.copy()
-    token = jwt.encode(to_encode, secret_key, algorithm="HS256")
+    token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
     return token
 
@@ -30,14 +34,14 @@ async def create_refresh_token(email: str):
         "scope": "refresh_token"
     }
     to_encode = token_data.copy()
-    token = jwt.encode(to_encode, secret_key, algorithm="HS256")
+    token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
     return token
 
 
 async def decode_refresh_token(refresh_token: str):
     try:
-        payload = jwt.decode(refresh_token, secret_key, algorithms="HS256")
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=ALGORITHM)
         if payload['scope'] == 'refresh_token':
             email = payload['sub']
             return email
@@ -53,7 +57,7 @@ async def get_current_user_email(token: str = Depends(oauth2_scheme), db: Sessio
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, secret_key, algorithms="HS256")
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         if payload['scope'] == 'access_token':
             email = payload["sub"]
             if email is None:

@@ -17,6 +17,11 @@ class UserRepo():
         self.db.refresh(new_user)
         return new_user
 
+    def activate_user(self, email):
+        user = self.get_by_email(email)
+        user.confirmed = True
+        self.db.commit()
+
     def generate_salt(self):
         return os.urandom(16)
 
