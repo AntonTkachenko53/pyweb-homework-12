@@ -52,3 +52,8 @@ class UserRepo():
     def get_user_refresh_token(self, user):
         user_from_db = self.db.query(UserModel).filter(UserModel.email == user.dict()['email']).first()
         return user_from_db.refresh_token
+
+    def update_image(self, email, url):
+        user_to_update = self.db.query(UserModel).filter(UserModel.email == email).first()
+        user_to_update.image = url
+        return user_to_update

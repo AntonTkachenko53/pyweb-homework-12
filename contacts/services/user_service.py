@@ -45,3 +45,7 @@ class UserService():
 
     def get_user_refresh_token(self, user: User):
         return self.repo.get_user_refresh_token(user)
+
+    def set_image(self, email: str, url: str) -> User:
+        user_from_db = self.repo.update_image(email, url)
+        return User.from_orm(user_from_db)

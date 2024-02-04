@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Security
+from fastapi import APIRouter, Depends, HTTPException, status, Security, File, UploadFile
 from dependencies.database import get_db, SessionLocal
 from depenedencies.rate_limiter import rate_limit
-from dependencies.auth import create_access_token, create_refresh_token, decode_refresh_token
+from dependencies.auth import create_access_token, create_refresh_token, decode_refresh_token, get_current_user_email
 from schemas.users_schema import User, TokenModel, UserActivation
 from services.user_service import UserService
 from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
+
+from depenedencies.cloudinary_dep import get_uploader
 
 router = APIRouter()
 security = HTTPBearer()
@@ -56,3 +58,21 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(sec
     refresh_token = await create_refresh_token(data={"sub": email})
     user_service.update_token(user, refresh_token, db)
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+
+
+@router.post("/upload_image")
+def upload(current_email: str = Depends(get_current_user_email), file: UploadFile = File(...),
+           uploader=Depends(get_uploader), db: SessionLocal = Depends(get_db)):
+    try:
+        user_service = UserService(db)
+        contents = file.file.read()
+        response = uploader.upload(contents, public_id=file.filename)
+        response.get('secure_url')
+        user_service.set_image(current_email, response.get('secure_url'))
+
+    except Exception:
+        return {"message": "There was an error uploading the file"}
+    finally:
+        file.file.close()
+
+    return {"message": f"Successfully uploaded {file.filename}"}

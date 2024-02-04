@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_URL=postgresql+psycopg2://postgres:password@localhost:5432/pyweb12
+    ports:
+      - "5432:5432"
