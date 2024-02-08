@@ -14,6 +14,18 @@ security = HTTPBearer()
 
 @router.post("/register/", status_code=status.HTTP_201_CREATED)
 async def register(user: User, db: SessionLocal = Depends(get_db), rl=Depends(rate_limit)):
+    """
+        Register a new user.
+
+        :param user: User data for registration.
+        :type user: User
+        :param db: Database session dependency.
+        :type db: SessionLocal
+        :param rl: Rate limit dependency.
+        :type rl: RateLimiter
+        :return: The newly registered user.
+        :rtype: User
+        """
     user_service = UserService(db)
     exist_user = user_service.get_by_email(user.email)
     if exist_user:
@@ -23,12 +35,34 @@ async def register(user: User, db: SessionLocal = Depends(get_db), rl=Depends(ra
 
 @router.post("/activate/", response_model=User)
 async def activate(data: UserActivation, db: SessionLocal = Depends(get_db), rl=Depends(rate_limit)):
+    """
+    Activate a user account.
+
+    :param data: User activation data.
+    :type data: UserActivation
+    :param db: Database session dependency.
+    :type db: SessionLocal
+    :param rl: Rate limit dependency.
+    :type rl: RateLimiter
+    :return: The activated user.
+    :rtype: User
+    """
     user_service = UserService(db)
     return user_service.activate_user(data)
 
 
 @router.post('/login/')
 async def login(body: OAuth2PasswordRequestForm = Depends(), db: SessionLocal = Depends(get_db)):
+    """
+        Log in a user.
+
+        :param body: Login request form data.
+        :type body: OAuth2PasswordRequestForm
+        :param db: Database session dependency.
+        :type db: SessionLocal
+        :return: Access and refresh tokens.
+        :rtype: dict
+        """
     user_service = UserService(db)
     user = user_service.get_by_email(body.username)
     if user is None:
@@ -46,6 +80,16 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: SessionLocal = 
 @router.get('/refresh_token', response_model=TokenModel)
 async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security),
                         db: SessionLocal = Depends(get_db)):
+    """
+        Refresh access and refresh tokens.
+
+        :param credentials: HTTP authorization credentials.
+        :type credentials: HTTPAuthorizationCredentials
+        :param db: Database session dependency.
+        :type db: SessionLocal
+        :return: New access and refresh tokens.
+        :rtype: TokenModel
+        """
     token = credentials.credentials
     email = await decode_refresh_token(token)
     user_service = UserService(db)
@@ -63,6 +107,20 @@ async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(sec
 @router.post("/upload_image")
 def upload(current_email: str = Depends(get_current_user_email), file: UploadFile = File(...),
            uploader=Depends(get_uploader), db: SessionLocal = Depends(get_db)):
+    """
+        Upload a user profile image.
+
+        :param current_email: The email of the current user.
+        :type current_email: str
+        :param file: The image file to upload.
+        :type file: UploadFile
+        :param uploader: The uploader dependency.
+        :type uploader: UploadService
+        :param db: Database session dependency.
+        :type db: SessionLocal
+        :return: Success message or error message.
+        :rtype: dict
+        """
     try:
         user_service = UserService(db)
         contents = file.file.read()

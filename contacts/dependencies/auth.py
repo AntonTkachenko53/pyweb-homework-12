@@ -16,6 +16,14 @@ ALGORITHM = os.getenv('ALGORITHM')
 
 
 async def create_access_token(email: str):
+    """
+    Create an access token.
+
+    :param email: The email of the user.
+    :type email: str
+    :return: The access token.
+    :rtype: str
+    """
     token_data = {
         "sub": email,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
@@ -28,6 +36,14 @@ async def create_access_token(email: str):
 
 
 async def create_refresh_token(email: str):
+    """
+    Create a refresh token.
+
+    :param email: The email of the user.
+    :type email: str
+    :return: The refresh token.
+    :rtype: str
+    """
     token_data = {
         "sub": email,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7),
@@ -40,6 +56,14 @@ async def create_refresh_token(email: str):
 
 
 async def decode_refresh_token(refresh_token: str):
+    """
+    Decode a refresh token.
+
+    :param refresh_token: The refresh token to decode.
+    :type refresh_token: str
+    :return: The email associated with the refresh token.
+    :rtype: str
+    """
     try:
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=ALGORITHM)
         if payload['scope'] == 'refresh_token':
@@ -51,6 +75,16 @@ async def decode_refresh_token(refresh_token: str):
 
 
 async def get_current_user_email(token: str = Depends(oauth2_scheme), db: SessionLocal = Depends(get_db)):
+    """
+    Get the email of the current user from the token.
+
+    :param token: The token containing user information.
+    :type token: str
+    :param db: Database session dependency.
+    :type db: SessionLocal
+    :return: The email of the current user.
+    :rtype: str
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

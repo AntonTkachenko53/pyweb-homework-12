@@ -21,5 +21,11 @@ app.include_router(user_router, prefix="/users")
 
 @app.get('/')
 async def health_check():
+    """
+    function to check connection
+
+    :return: dict with message
+    :rtype: dict
+    """
     print('or')
     return {'status': 'OK'}

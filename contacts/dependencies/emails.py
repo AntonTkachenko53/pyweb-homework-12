@@ -13,6 +13,16 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 
 def send_email(subject, message, to_email):
+    """
+    Send an email.
+
+    :param subject: The subject of the email.
+    :type subject: str
+    :param message: The message content of the email.
+    :type message: str
+    :param to_email: The recipient's email address.
+    :type to_email: str
+    """
     msg = MIMEMultipart()
     msg['From'] = EMAIL_HOST_USER
     msg['To'] = to_email
