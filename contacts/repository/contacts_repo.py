@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from models.contacts_model import ContactModel
+from contacts.models.contacts_model import ContactModel
 
 
 class ContactsRepo():
@@ -10,6 +10,7 @@ class ContactsRepo():
     :param db: A database session.
     :type db: sqlalchemy.orm.session.Session
     """
+
     def __init__(self, db):
         """
         Initialize the UserRepo instance.
@@ -73,8 +74,8 @@ class ContactsRepo():
         :return: updated contact or None if it does not exist
         :rtype: ContactModel | None
         """
-        contact_for_update = (self.db.query(ContactModel).filter(ContactModel.id == id),
-                              ContactModel.user_email == user_email.first())
+        contact_for_update = self.db.query(ContactModel).filter(ContactModel.id == id,
+                                                                ContactModel.user_email == user_email).first()
         if contact_for_update:
             contact_item_data = contact_item.dict(exclude_unset=True)
             for key, value in contact_item_data.items():
@@ -154,6 +155,6 @@ class ContactsRepo():
         end_date = date.today() + timedelta(days=7)
 
         return self.db.query(ContactModel).filter(ContactModel.user_email == user_email,
-            (ContactModel.birthday >= date.today()) &
-            (ContactModel.birthday <= end_date)
-        ).all()
+                                                  (ContactModel.birthday >= date.today()) &
+                                                  (ContactModel.birthday <= end_date)
+                                                  ).all()

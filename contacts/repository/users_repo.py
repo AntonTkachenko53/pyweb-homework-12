@@ -1,9 +1,10 @@
 import os
 import hashlib
-from models.user import UserModel
+from contacts.models.user import UserModel
+from contacts.schemas.users_schema import User
 
 
-class UserRepo():
+class UserRepo:
     """
     A repository for managing user data.
 
@@ -71,7 +72,7 @@ class UserRepo():
         if salt is None:
             salt = self.generate_salt()
         else:
-            salt = bytes.fromhex(salt)
+            salt = salt
         salted_password = password.encode() + salt
         hashed_password = hashlib.sha256(salted_password).hexdigest()
         return str(hashed_password), str(salt.hex())
@@ -117,16 +118,16 @@ class UserRepo():
         user.refresh_token = refresh_token
         self.db.commit()
 
-    def get_user_refresh_token(self, user):
+    def get_user_refresh_token(self, user: User):
         """
         Retrieve the refresh token for a user.
 
         :param user: The user object.
-        :type user: UserModel
+        :type user: User
         :return: The refresh token.
         :rtype: str
         """
-        user_from_db = self.db.query(UserModel).filter(UserModel.email == user.dict()['email']).first()
+        user_from_db = self.db.query(UserModel).filter(UserModel.email == user.email).first()
         return user_from_db.refresh_token
 
     def update_image(self, email, url):

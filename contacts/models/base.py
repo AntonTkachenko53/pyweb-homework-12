@@ -1,4 +1,4 @@
-from dependencies.database import Base
+from contacts.dependencies.database import Base
 from sqlalchemy import Column, Integer
 
 

@@ -13,7 +13,6 @@ class User(BaseModel):
     image: str | None
 
     class Config:
-        orm_mode = True
         from_attributes = True
         from_orm = True
 

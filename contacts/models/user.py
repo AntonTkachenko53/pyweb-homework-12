@@ -10,6 +10,6 @@ class UserModel(BaseModel):
     password = Column(String)
     salt = Column(String)
     refresh_token = Column(String(255), nullable=True)
-    confirmed = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=False)
     otp = Column(String)
     image = Column(String)

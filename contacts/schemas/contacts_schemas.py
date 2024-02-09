@@ -13,7 +13,6 @@ class Contact(BaseModel):
     favorite: Optional[bool]
 
     class Config:
-        orm_mode = True
         from_attributes = True
 
 
